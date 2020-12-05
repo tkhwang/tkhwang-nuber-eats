@@ -4,11 +4,16 @@ import { Repository } from 'typeorm'
 import { CreateAccountInput } from './dtos/create-account.dto'
 import { LoginInput, LoginOutput } from './dtos/login.dto'
 import { User } from './entities/user.entity'
+import * as jwt from 'jsonwebtoken'
+import { ConfigService } from '@nestjs/config'
+import { JwtService } from 'src/jwt/jwt.service'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly user: Repository<User>,
+    private readonly config: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createAccount({
@@ -50,9 +55,10 @@ export class UsersService {
         }
       }
       // make JWT
+      const token = jwt.sign({ id: user.id }, this.config.get('SECRET_KEY'))
       return {
         ok: true,
-        token: '123123123132',
+        token,
       }
     } catch (error) {
       return {
