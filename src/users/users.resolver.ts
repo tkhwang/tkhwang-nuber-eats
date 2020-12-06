@@ -1,4 +1,6 @@
+import { UseGuards } from '@nestjs/common'
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql'
+import { AuthGuard } from 'src/auth/auth.guard'
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -31,9 +33,7 @@ export class UsersResolver {
   }
 
   @Mutation(returns => LoginOutput)
-  async login(
-    @Args('input') loginInput: LoginInput,
-  ) /* : Promise<LoginOutput> */ {
+  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     try {
       return this.usersService.login(loginInput)
     } catch (error) {
@@ -42,9 +42,6 @@ export class UsersResolver {
   }
 
   @Query(returns => User)
-  me(@Context() context) {
-    console.log(context)
-    if (!context.user) return
-    else return context.user
-  }
+  @UseGuards(AuthGuard)
+  me() {}
 }
