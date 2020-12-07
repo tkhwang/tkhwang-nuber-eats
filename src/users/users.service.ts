@@ -46,7 +46,10 @@ export class UsersService {
 
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.user.findOne({ email })
+      const user = await this.user.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      )
       // find user with email
       if (!user) {
         return {
@@ -98,16 +101,21 @@ export class UsersService {
   }
 
   async verifyEmail(code: string): Promise<boolean> {
-    const verification = await this.verification.findOne(
-      { code },
-      { relations: ['user'] },
-    )
-    if (verification) {
-      verification.user.verified = true
-      await this.user.save(verification.user)
+    try {
+      const verification = await this.verification.findOne(
+        { code },
+        { relations: ['user'] },
+      )
+      if (verification) {
+        verification.user.verified = true
+        await this.user.save(verification.user)
 
-      return true
+        return true
+      }
+      throw new Error()
+    } catch (error) {
+      console.log(error)
+      return false
     }
-    return false
   }
 }
