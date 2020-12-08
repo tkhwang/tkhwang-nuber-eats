@@ -32,10 +32,6 @@ export class UserResolver {
   @Query(returns => User)
   @UseGuards(AuthGuard)
   me(@AuthUser() authUser: User) {
-    console.log(
-      '🚀 ~ file: users.resolver.ts ~ line 35 ~ UserResolver ~ me ~ authUser',
-      authUser,
-    )
     return authUser
   }
 
