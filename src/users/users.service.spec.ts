@@ -59,7 +59,22 @@ describe('UserService', () => {
   })
 
   describe('createAccount', () => {
-    it('should fail if user exists.', () => {})
+    it('should fail if user exists.', async () => {
+      usersRepository.findOne.mockReturnValue({
+        id: 8,
+        email: 'tkhwang@gmail.com',
+      })
+      const result = await service.createAccount({
+        email: '',
+        password: '',
+        role: 0,
+      })
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is a user with that email already',
+      })
+    })
   })
 
   it.todo('login')
