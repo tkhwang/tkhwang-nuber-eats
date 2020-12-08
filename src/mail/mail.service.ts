@@ -1,46 +1,51 @@
-import { Inject, Injectable } from '@nestjs/common'
-import got from 'got'
-import { CONFIG_OPTIONS } from 'src/jwt/jwt.constants'
-import { MailModuleOptions } from './mail.interface'
-import * as FormData from 'form-data'
+import got from 'got';
+import * as FormData from 'form-data';
+import { Inject, Injectable } from '@nestjs/common';
+import { CONFIG_OPTIONS } from 'src/common/common.constants';
+import { EmailVar, MailModuleOptions } from './mail.interfaces';
 
 @Injectable()
 export class MailService {
   constructor(
     @Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions,
-  ) {
-    console.log(options)
-    this.sendEmail('testing', 'test')
+  ) {}
+
+  async sendEmail(
+    subject: string,
+    template: string,
+    emailVars: EmailVar[],
+  ): Promise<boolean> {
+    const form = new FormData();
+    form.append(
+      'from',
+      `Nico from Nuber Eats <mailgun@${this.options.domain}>`,
+    );
+    form.append('to', `nico@nomadcoders.co`);
+    form.append('subject', subject);
+    form.append('template', template);
+    emailVars.forEach(eVar => form.append(`v:${eVar.key}`, eVar.value));
+    try {
+      await got.post(
+        `https://api.mailgun.net/v3/${this.options.domain}/messages`,
+        {
+          headers: {
+            Authorization: `Basic ${Buffer.from(
+              `api:${this.options.apiKey}`,
+            ).toString('base64')}`,
+          },
+          body: form,
+        },
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
-  /*
-curl -s --user 'api:YOUR_API_KEY' \
-	https://api.mailgun.net/v3/YOUR_DOMAIN_NAME/messages \
-	-F from='Excited User <mailgun@YOUR_DOMAIN_NAME>' \
-	-F to=YOU@YOUR_DOMAIN_NAME \
-	-F to=bar@example.com \
-	-F subject='Hello' \
-  -F text='Testing some Mailgun awesomeness!'
-*/
-  private async sendEmail(subject: string, content: string) {
-    const form = new FormData()
-    form.append('from', `Excited User <mailgun@${this.options.domain}>`)
-    form.append('to', `tkhwang@gmail.com`)
-    form.append('text', content)
-    form.append('subject', subject)
-
-    const response = await got(
-      `https://api.mailgun.net/v3/${this.options.domain}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${Buffer.from(
-            `api:${this.options.apiKey}`,
-          ).toString('base64')}`,
-        },
-        body: form,
-      },
-    )
-    console.log(response.body)
+  sendVerificationEmail(email: string, code: string) {
+    this.sendEmail('Verify Your Email', 'verify-email', [
+      { key: 'code', value: code },
+      { key: 'username', value: email },
+    ]);
   }
 }
