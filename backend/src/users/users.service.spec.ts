@@ -88,6 +88,10 @@ describe('UserService', () => {
       expect(usersRepository.create).toHaveBeenCalledWith(createAccountArgs)
       expect(usersRepository.save).toHaveBeenCalledTimes(1)
       expect(usersRepository.save).toHaveBeenCalledWith(createAccountArgs)
+      expect(usersRepository.create).toHaveBeenCalledTimes(1)
+      expect(usersRepository.create).toHaveBeenCalledWith({
+        user: createAccountArgs,
+      })
     })
   })
 
