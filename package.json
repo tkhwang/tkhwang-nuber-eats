@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "autoprefixer": "^10.1.0",
+    "postcss": "^8.2.1"
+  },
+  "devDependencies": {
+    "@types/autoprefixer": "^9.7.2"
+  }
+}
